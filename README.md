@@ -11,8 +11,11 @@ Pytroch Model Implmentation
 | LiteFormer  | W. Sun, et al. "LiteFormer: A Lightweight and Efficient Transformer for Rotating Machine Fault Diagnosis," IEEE Trans. Reli., early access, 2023.  |
 | LFEE-Net  | H. Fang, et al. "LEFE-Net: A Lightweight Efficient Feature Extraction Network with Strong Robustness for Bearing Fault Diagnosis," IEEE Trans. Instrum. Meas, vol. 70, pp. 1-11, 2021.  |
 | MCDS-CNN | L. Ling, et al. “A lightweight bearing fault diagnosis method based on multi-channel depthwise separable convolutional neural network,” Electro., vol. 11, 2022.
-| MANIQA | S. Yang et al., “Maniqa: Multi-dimension attention network for noreference image quality assessment,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR) Workshops, Jun. 2022, pp. 1191–1200.
 | MIMTNet | Y. Wang, et al. "A Multi-Input and Multi-Task Convolutional Neural Network for Fault Diagnosis Based on Bearing Vibration Signal," IEEE Sensors Journal, vol. 21, no. 9, pp. 10946-10956, 1 May 2021.
+| MANIQA | S. Yang et al., “Maniqa: Multi-dimension attention network for noreference image quality assessment,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR) Workshops, Jun. 2022, pp. 1191–1200.
+| ViT | A. Dosovitskiy et al., “An image is worth 16x16 words: Transformers for image recognition at scale,” 2020, arXiv:2010.11929.
+| EfficientNetV2 | M. Tan et al., “EfficientNetV2: Smaller models and faster training,” in Proc. Int. Conf. Mach. Learn. (ICML), 2021, pp. 10096–10106.
+
 
 
 TensorFlow Model Implmentation
