@@ -15,3 +15,4 @@ Pytroch Model Implmentation
 | MANIQA | S. Yang et al., “Maniqa: Multi-dimension attention network for noreference image quality assessment,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR) Workshops, Jun. 2022, pp. 1191–1200.
 | ViT | A. Dosovitskiy et al., “An image is worth 16x16 words: Transformers for image recognition at scale,” 2020, arXiv:2010.11929.
 | EfficientNetV2 | M. Tan et al., “EfficientNetV2: Smaller models and faster training,” in Proc. Int. Conf. Mach. Learn. (ICML), 2021, pp. 10096–10106.
+| Differential Transformer | T. Ye et al. , "Differential Transformer" 2024. arXiv:2410.05258
