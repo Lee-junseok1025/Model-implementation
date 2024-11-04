@@ -12,7 +12,7 @@ class Linformer(nn.Module):
                  share_kv=False,
                  cross_attn=False
                 ):
-        super(DiffAttn, self).__init__()
+        super(Linformer, self).__init__()
         self.embed_dim = embed_dim
         self.k_dim = k_dim
         self.num_heads = num_heads
@@ -47,18 +47,21 @@ class Linformer(nn.Module):
           b, tgt_len, dim = x.size()
           q = self.q(x)
           if self.cross_attn is False or kv is None:
-            k = self.k(x if kv is None else kv)
-            if self.share_kv is False:
-              v = self.v(x if kv is None else kv)
-            else:
-              v = self.k(x if kv is None else kv)
+              k = self.k(x if kv is None else kv)
+              if self.share_kv is False:
+                  v = self.v(x if kv is None else kv)
+              else:
+                  v = self.k(x if kv is None else kv)
           else:
             k = kv_cache[self.k]
             v = kv_cache[self.v]
           
-          
-          self.proj_k = nn.Parameter(init_(torch.zeros(tgt_len, self.k_dim)))
-          self.proj_v = nn.Parameter(init_(torch.zeros(tgt_len, self.k_dim)))
+          if not self.cross_attn:
+              self.proj_k = nn.Parameter(init_(torch.zeros(tgt_len, self.k_dim)))
+              self.proj_v = nn.Parameter(init_(torch.zeros(tgt_len, self.k_dim)))
+          else:
+              self.proj_k = nn.Parameter(init_(torch.zeros(kv.shape[1], self.k_dim)))
+              self.proj_v = nn.Parameter(init_(torch.zeros(kv.shape[1], self.k_dim)))
 
           kv_projs = (self.proj_k, self.proj_v if not self.share_kv else self.proj_k)
           
