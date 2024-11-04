@@ -46,7 +46,7 @@ class Linformer(nn.Module):
           
           b, tgt_len, dim = x.size()
           q = self.q(x)
-          if self.cross_attn is False or kv is None:
+          if not self.cross_attn or kv is None:
               k = self.k(x if kv is None else kv)
               if self.share_kv is False:
                   v = self.v(x if kv is None else kv)
