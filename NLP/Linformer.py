@@ -40,9 +40,11 @@ class Linformer(nn.Module):
         self.out_proj = nn.Linear(self.head_dims * self.num_heads,embed_dim,bias=False)
                   
     def attn(self,q,k,v,dropout_p):
-      print(q.shape,k.shape)
-      qk = (q * self.scale) @ (k * self.scale).transpose(-1,-2)
-      attn_score = qk @ v
+      qk = torch.einsum('bhld,bhkd->bhlk',q,k) * self.scale
+      # qk = (q * self.scale) @ (k * self.scale).transpose(-1,-2)
+      qk = qk.softmax(dim=-1)
+      qk = F.dropout(qk,p=dropout_p)
+      attn_score = torch.einsum('bhlk,bhkd->bhld',qk,v)
       output = rearrange(attn_score,'b h l d -> b l (h d)')
       return output
 
@@ -55,7 +57,7 @@ class Linformer(nn.Module):
           b, tgt_len, dim = x.size()
           kv_len = tgt_len if kv is None else kv.shape[1]
           q = self.q(x)
-          if not self.cross_attn or kv is not None:
+          if kv_cache is None or kv is None:
               k = self.k(x if kv is None else kv)
               if self.share_kv is False:
                   v = self.v(x if kv is None else kv)
@@ -65,7 +67,6 @@ class Linformer(nn.Module):
             k = kv_cache[self.k]
             v = kv_cache[self.v]
           
-
           proj_k_shape = (kv_len, self.k_dim) if self.cross_attn else (tgt_len, self.k_dim)
           self.proj_k = nn.Parameter(init_(torch.zeros(*proj_k_shape)))
           self.proj_v = nn.Parameter(init_(torch.zeros(*proj_k_shape)))
@@ -73,30 +74,23 @@ class Linformer(nn.Module):
           if kv_len < tgt_len:
             self.proj_k = map(lambda t: t[:kv_len],self.proj_k)
             self.proj_v = map(lambda t: t[:kv_len],self.proj_v)
-
-          kv_projs = (self.proj_k, self.proj_v if not self.share_kv else self.proj_k)
           
-          if not self.share_kv and not self.cross_attn: # use k and v params
-            k = torch.einsum('bld,lk -> blk',k,self.proj_k)
-            v = torch.einsum('bld,lk -> blk',v,self.proj_v)
+          if not self.share_kv: # use k and v params
+            k = torch.einsum('bld,lk -> bkd',k,self.proj_k)
+            v = torch.einsum('bld,lk -> bkd',v,self.proj_v)
 
-            k = rearrange(k, 'b (h d) l -> b h l d',h=self.num_heads,d=self.k_h_dim)
-            v = rearrange(v, 'b (h d) l -> b h l d',h=self.num_heads,d=self.k_h_dim)
-          elif self.cross_attn is True:
-            k = rearrange(k, 'b l (h d) -> b h l d',h=self.num_heads,d=self.head_dims)
-            v = rearrange(v, 'b l (h d) -> b h l d',h=self.num_heads,d=self.head_dims)
-            print(k.shape)
+            k = rearrange(k, 'b k (h d) -> b h k d',h=self.num_heads,d=self.head_dims)
+            v = rearrange(v, 'b k (h d) -> b h k d',h=self.num_heads,d=self.head_dims)
+
           else: # use only k params
-            k = torch.einsum('bld,lk -> blk',k,self.proj_k)
-            v = torch.einsum('bld,lk -> blk',v,self.proj_k)
-            k = rearrange(k, 'b (h d) l -> b h l d',h=self.num_heads,d=self.k_h_dim)
-            v = rearrange(v, 'b (h d) l -> b h l d',h=self.num_heads,d=self.k_h_dim)
+            k = torch.einsum('bld,lk -> bkd',k,self.proj_k)
+            v = torch.einsum('bld,lk -> bkd',v,self.proj_k)
+            k = rearrange(k, 'b k (h d) -> b h k d',h=self.num_heads,d=self.head_dims)
+            v = rearrange(v, 'b k (h d) -> b h k d',h=self.num_heads,d=self.head_dims)
     
           q = rearrange(q,'b l (h d) -> b h l d',h=self.num_heads,d=self.head_dims) 
           
-          print(q.shape,k.shape,v.shape)
           attn = self.attn(q,k,v,dropout_p=self.dropout_p)
-          print(attn.shape)
           out = self.out_proj(attn)
           return out
 if __name__ == '__main__':
@@ -104,4 +98,4 @@ if __name__ == '__main__':
     inputs = torch.randn(2,256,512) # Batch size tgt_len Embed dim
     input_2 = torch.randn(2,1024,512)
     attn = Linformer(embed_dim=512,k_dim=256,num_heads=8,cross_attn=True)
-    print(attn(inputs).shape)
+    print(attn(inputs,input_2).shape)
